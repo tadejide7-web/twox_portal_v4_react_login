@@ -1,0 +1,37 @@
+# Render Blueprint: the API (FastAPI + SQLite on a persistent disk) and the React website (static site).
+services:
+  - type: web
+    name: twox-api
+    runtime: python
+    plan: starter                  # a persistent disk needs a paid plan
+    buildCommand: pip install -r requirements-api.txt
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.3
+      - key: TWOX_DB                # SQLite file on the persistent disk
+        value: /var/data/twox.db
+      - key: TWOX_SECRET_KEY        # signs login tokens; generated once by Render
+        generateValue: true
+      - key: TWOX_ADMIN_USERNAME    # first admin account, created on first start
+        sync: false
+      - key: TWOX_ADMIN_PASSWORD    # at least 10 characters
+        sync: false
+      - key: TWOX_CORS_ORIGINS      # the website address, e.g. https://twox-web.onrender.com
+        sync: false
+    disk:
+      name: twox-data
+      mountPath: /var/data
+      sizeGB: 1
+
+  - type: web
+    name: twox-web
+    runtime: static
+    buildCommand: cd web && npm install && npm run build
+    staticPublishPath: web/dist
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: VITE_API_URL           # the API address, e.g. https://twox-api.onrender.com
+        sync: false

@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+node_modules/
+dist/
+# local SSOT database: never commit real assessment data
+*.db
+thresholds.json
+.env
+.env.local
